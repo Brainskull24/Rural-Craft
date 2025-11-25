@@ -1,1 +1,115 @@
-if(!self.define){let e,s={};const n=(n,i)=>(n=new URL(n+".js",i).href,s[n]||new Promise(s=>{if("document"in self){const e=document.createElement("script");e.src=n,e.onload=s,document.head.appendChild(e)}else e=n,importScripts(n),s()}).then(()=>{let e=s[n];if(!e)throw new Error(`Module ${n} didn’t register its module`);return e}));self.define=(i,t)=>{const o=e||("document"in self?document.currentScript.src:"")||location.href;if(s[o])return;let r={};const a=e=>n(e,o),c={module:{uri:o},exports:r,require:a};s[o]=Promise.all(i.map(e=>c[e]||a(e))).then(e=>(t(...e),r))}}define(["./workbox-40c80ae4"],function(e){"use strict";self.skipWaiting(),e.clientsClaim(),e.precacheAndRoute([{url:"assets/index-CC_5oetY.js",revision:null},{url:"assets/index-ClkppYrH.css",revision:null},{url:"index.html",revision:"52979f8b2eed79944498e698356cba1e"},{url:"registerSW.js",revision:"1335650609bf1ed4da9c71906e33ac81"},{url:"logo-no-bg.png",revision:"646fc4a9d57d46fa5582a1aeeca35733"},{url:"logo.png",revision:"e02d28200e71e4b08a76afe3b4169648"},{url:"manifest.json",revision:"3d05467fdb3d8fd522e08d68180caa6d"},{url:"manifest.webmanifest",revision:"94b8a76b9ac0d69917ccc09937b10aca"}],{}),e.cleanupOutdatedCaches(),e.registerRoute(new e.NavigationRoute(e.createHandlerBoundToURL("/index.html"))),e.registerRoute(/\/assets\/.*\.(?:png|jpg|jpeg|svg|webp|gif)$/,new e.CacheFirst({cacheName:"assets-images",plugins:[new e.ExpirationPlugin({maxEntries:200,maxAgeSeconds:2592e3}),new e.CacheableResponsePlugin({statuses:[0,200]})]}),"GET"),e.registerRoute(/^https?:\/\/localhost:8080\/api\/.*$/,new e.NetworkFirst({cacheName:"api-cache",networkTimeoutSeconds:10,plugins:[new e.ExpirationPlugin({maxEntries:100,maxAgeSeconds:604800}),new e.CacheableResponsePlugin({statuses:[0,200]})]}),"GET")});
+// Based off of https://github.com/pwa-builder/PWABuilder/blob/main/docs/sw.js
+
+/*
+      Welcome to our basic Service Worker! This Service Worker offers a basic offline experience
+      while also being easily customizeable. You can add in your own code to implement the capabilities
+      listed below, or change anything else you would like.
+
+
+      Need an introduction to Service Workers? Check our docs here: https://docs.pwabuilder.com/#/home/sw-intro
+      Want to learn more about how our Service Worker generation works? Check our docs here: https://docs.pwabuilder.com/#/studio/existing-app?id=add-a-service-worker
+
+      Did you know that Service Workers offer many more capabilities than just offline? 
+        - Background Sync: https://microsoft.github.io/win-student-devs/#/30DaysOfPWA/advanced-capabilities/06
+        - Periodic Background Sync: https://web.dev/periodic-background-sync/
+        - Push Notifications: https://microsoft.github.io/win-student-devs/#/30DaysOfPWA/advanced-capabilities/07?id=push-notifications-on-the-web
+        - Badges: https://microsoft.github.io/win-student-devs/#/30DaysOfPWA/advanced-capabilities/07?id=application-badges
+    */
+
+const HOSTNAME_WHITELIST = [
+  self.location.hostname,
+  "fonts.gstatic.com",
+  "fonts.googleapis.com",
+  "cdn.jsdelivr.net",
+];
+
+// The Util Function to hack URLs of intercepted requests
+const getFixedUrl = (req) => {
+  var now = Date.now();
+  var url = new URL(req.url);
+
+  // 1. fixed http URL
+  // Just keep syncing with location.protocol
+  // fetch(httpURL) belongs to active mixed content.
+  // And fetch(httpRequest) is not supported yet.
+  url.protocol = self.location.protocol;
+
+  // 2. add query for caching-busting.
+  // Github Pages served with Cache-Control: max-age=600
+  // max-age on mutable content is error-prone, with SW life of bugs can even extend.
+  // Until cache mode of Fetch API landed, we have to workaround cache-busting with query string.
+  // Cache-Control-Bug: https://bugs.chromium.org/p/chromium/issues/detail?id=453190
+  if (url.hostname === self.location.hostname) {
+    url.search += (url.search ? "&" : "?") + "cache-bust=" + now;
+  }
+  return url.href;
+};
+
+/**
+ *  @Lifecycle Activate
+ *  New one activated when old isnt being used.
+ *
+ *  waitUntil(): activating ====> activated
+ */
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.clients.claim());
+});
+
+/**
+ *  @Functional Fetch
+ *  All network requests are being intercepted here.
+ *
+ *  void respondWith(Promise<Response> r)
+ */
+self.addEventListener("fetch", (event) => {
+  const reqUrl = new URL(event.request.url);
+
+  // Development servers like Vite serve module scripts under paths such as
+  // /@vite/, /env.mjs and other .mjs/.js files. In development we must not
+  // intercept those requests because the SW can accidentally return cached
+  // HTML (index.html) which causes the MIME/type module error.
+  // - Let Vite handle its dev module requests directly.
+  if (
+    reqUrl.pathname.startsWith("/@vite") ||
+    reqUrl.pathname === "/env.mjs" ||
+    reqUrl.pathname.endsWith(".mjs") ||
+    reqUrl.pathname.endsWith(".js")
+  ) {
+    return;
+  }
+
+  // Skip some of cross-origin requests, like those for Google Analytics.
+  if (HOSTNAME_WHITELIST.indexOf(reqUrl.hostname) > -1) {
+    // Stale-while-revalidate
+    // similar to HTTP's stale-while-revalidate: https://www.mnot.net/blog/2007/12/12/stale
+    // Upgrade from Jake's to Surma's: https://gist.github.com/surma/eb441223daaedf880801ad80006389f1
+    const cached = caches.match(event.request);
+    const fixedUrl = getFixedUrl(event.request);
+    const fetched = fetch(fixedUrl, { cache: "no-store" });
+    const fetchedCopy = fetched.then((resp) => resp.clone());
+
+    // Call respondWith() with whatever we get first.
+    // If the fetch fails (e.g disconnected), wait for the cache.
+    // If there’s nothing in cache, wait for the fetch.
+    // If neither yields a response, return offline pages.
+    event.respondWith(
+      Promise.race([fetched.catch((_) => cached), cached])
+        .then((resp) => resp || fetched)
+        .catch((_) => {
+          /* eat any errors */
+        })
+    );
+
+    // Update the cache with the version we fetched (only for ok status)
+    event.waitUntil(
+      Promise.all([fetchedCopy, caches.open("pwa-cache")])
+        .then(
+          ([response, cache]) =>
+            response.ok && cache.put(event.request, response)
+        )
+        .catch((_) => {
+          /* eat any errors */
+        })
+    );
+  }
+});

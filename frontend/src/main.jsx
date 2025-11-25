@@ -8,7 +8,7 @@ import { register, unregister } from "./serviceWorkerRegistration.js";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/user">
       <ShopContextProvider>
         <App />
       </ShopContextProvider>
