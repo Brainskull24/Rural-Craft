@@ -33,7 +33,7 @@ const loginUser = async (req, res) => {
 
 
 }catch (err) {
-    console.log(err);
+    console.error(err);
     res.json({ success: false, message: err.message });
   }
 };
@@ -73,7 +73,7 @@ const registerUser = async (req, res) => {
 
     res.json({ success: true, token });
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.json({ success: false, message: err.message });
   }
 };
@@ -93,7 +93,7 @@ const adminLogin = async (req, res) => {
    
     
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.json({ success: false, message: error.message });
   }
 };

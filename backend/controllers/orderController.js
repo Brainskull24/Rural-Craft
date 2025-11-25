@@ -31,7 +31,7 @@ const placeOrder = async (req, res) => {
 
     res.json({ success: true, message: "Order Placed Successfully" });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.json({ success: false, message: error.message });
   }
 };
@@ -40,7 +40,6 @@ const placeOrder = async (req, res) => {
 const placeOrderStripe = async (req, res) => {
   try {
     const { userId, items, amount, address } = req.body;
-    console.log(req.body);
     const { origin } = req.headers;
     const orderData = {
       userId,
@@ -86,7 +85,7 @@ const placeOrderStripe = async (req, res) => {
 
     res.json({ success: true, session_url: session.url });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.json({ success: false, message: error.message });
   }
 };
@@ -102,7 +101,7 @@ const allOrders = async (req, res) => {
     const orders = await orderModel.find({});
     res.json({ success: true, orders });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.json({ success: false, message: error.message });
   }
 };
@@ -114,7 +113,7 @@ const userOrders = async (req, res) => {
     const orders = await orderModel.find({ userId });
     res.json({ success: true, orders });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.json({ success: false, message: error.message });
   }
 };
@@ -130,7 +129,7 @@ const updateStatus = async (req, res) => {
     await orderModel.findByIdAndUpdate(orderId, dataUpdate);
     res.json({ success: true, message: "Order Status Updated" });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.json({ success: false, message: error.message });
   }
 };

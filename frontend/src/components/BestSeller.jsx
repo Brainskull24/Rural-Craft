@@ -8,9 +8,7 @@ const BestSeller = () => {
   const [bestSeller, setBestSeller] = useState([]);
 
   useEffect(() => {
-    console.log("Products:", products); // Debugging line
     const bestSellerProducts = products.filter((item) => item.bestseller); // Corrected property name
-    console.log("Best Seller Products:", bestSellerProducts); // Debugging line
     setBestSeller(bestSellerProducts.slice(0, 5));
   }, [products]);
 
@@ -19,7 +17,8 @@ const BestSeller = () => {
       <div className="text-center py-8 text-3xl">
         <Title text1={"POPULAR"} text2={"CRAFTS"} />
         <p className="w-3/4 m-auto text-xs sm:text-sm md:text-base text-gray-600">
-          These handcrafted treasures are loved by our customers. Support artisans and bring home authentic, handmade craftsmanship.
+          These handcrafted treasures are loved by our customers. Support
+          artisans and bring home authentic, handmade craftsmanship.
         </p>
       </div>
 

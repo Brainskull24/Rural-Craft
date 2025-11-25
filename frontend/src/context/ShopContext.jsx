@@ -46,23 +46,14 @@ const ShopContextProvider = (props) => {
     setCartItems(cartData);
     const newCount = computeCartCount(cartData);
     if (prevCount === 0 && newCount > 0) {
-      console.log(
-        "addToCart: prevCount=",
-        prevCount,
-        "newCount=",
-        newCount,
-        "-> firing toast"
-      );
       toast.success("Product has been added to the cart");
-    } else {
-      console.log("addToCart: prevCount=", prevCount, "newCount=", newCount);
     }
     // try to update server if we have token
     if (token) {
       try {
         await addToCartRemote(backendUrl, token, itemId, size);
       } catch (error) {
-        console.log(error);
+        console.error(error);
         toast.error(error.message);
       }
     }
@@ -79,7 +70,7 @@ const ShopContextProvider = (props) => {
       try {
         await updateQuantityRemote(backendUrl, token, itemId, size, quantity);
       } catch (error) {
-        console.log(error);
+        console.error(error);
         toast.error(error.message);
       }
     }
@@ -101,13 +92,13 @@ const ShopContextProvider = (props) => {
             JSON.stringify(response.data.products)
           );
         } catch (err) {
-          console.log("Failed to cache products in localStorage:", err);
+          console.error("Failed to cache products in localStorage:", err);
         }
       } else {
         toast.error(response.data.message);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       // Try to load products from localStorage when network is unavailable
       try {
         const cached = localStorage.getItem("products_cache");
@@ -117,14 +108,13 @@ const ShopContextProvider = (props) => {
           return;
         }
       } catch (err) {
-        console.log("Failed to read products_cache:", err);
+        console.error("Failed to read products_cache:", err);
       }
       toast.error(error.message);
     }
   };
 
   const getUserCart = async (token) => {
-    console.log("Fetching user cart with token:", token);
     try {
       const response = await axios.post(
         backendUrl + "/api/cart/get",
@@ -133,7 +123,6 @@ const ShopContextProvider = (props) => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      console.log("User cart response:", response.data);
       if (response.data.success) {
         // Merge server cart with local cart stored in localStorage.
         // Prefer local changes (assume local is more recent when user was offline).
@@ -143,27 +132,26 @@ const ShopContextProvider = (props) => {
           const raw = localStorage.getItem("cart_local");
           if (raw) localCart = JSON.parse(raw);
         } catch (err) {
-          console.log("Failed to read cart_local:", err);
+          console.error("Failed to read cart_local:", err);
         }
 
         const merged = mergeCarts(serverCart, localCart);
 
         setCartItems(merged);
-        console.log("Cart items set (merged):", merged);
 
         // Attempt to sync merged cart back to server
         if (token && navigator.onLine) {
           try {
             await syncCartToServer(merged, token);
           } catch (err) {
-            console.log("Failed to sync merged cart to server:", err);
+            console.error("Failed to sync merged cart to server:", err);
           }
         }
       } else {
         toast.error(response.data.message);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       toast.error(error.message);
     }
   };
@@ -199,7 +187,6 @@ const ShopContextProvider = (props) => {
   // On reconnect, try to sync local cart to server
   useEffect(() => {
     function handleOnline() {
-      console.log("Network reconnected — attempting cart sync");
       if (token) {
         const raw = localStorage.getItem("cart_local");
         if (raw) {

@@ -68,7 +68,7 @@ export async function syncCartToServer(cart, backendUrl, token) {
           { headers: { Authorization: `Bearer ${token}` } }
         );
       } catch (err) {
-        console.log(
+        console.error(
           "syncCartToServer failed for",
           itemId,
           size,

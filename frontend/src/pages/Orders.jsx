@@ -18,7 +18,6 @@ const Orders = () => {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      console.log("lol", response.data.orders);
       if (response.data.success) {
         let allOrdersItems = [];
         response.data.orders.forEach((order) => {
@@ -34,7 +33,7 @@ const Orders = () => {
         setOrderData(allOrdersItems.reverse());
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 

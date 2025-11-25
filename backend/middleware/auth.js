@@ -19,7 +19,7 @@ const authUser = async (req, res, next) => {
     console.log("Token decoded:", token_decode);
     next();
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(401).json({ success: false, message: error.message });
   }
 };

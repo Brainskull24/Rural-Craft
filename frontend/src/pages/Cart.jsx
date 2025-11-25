@@ -46,16 +46,8 @@ const Cart = () => {
     if (prevCountRef.current === null) {
       // initialize previous count on first run; don't show toast on initial mount
       prevCountRef.current = currentCount;
-      console.log("Cart effect init: currentCount=", currentCount);
     } else {
-      console.log(
-        "Cart effect: prevCount=",
-        prevCountRef.current,
-        "currentCount=",
-        currentCount
-      );
       if (prevCountRef.current === 0 && currentCount > 0) {
-        console.log("Cart effect -> firing toast");
         toast.success("Handcrafted item has been added to the cart");
       }
       prevCountRef.current = currentCount;

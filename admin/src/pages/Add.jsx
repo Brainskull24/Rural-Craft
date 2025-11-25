@@ -36,7 +36,7 @@ const Add = ({ token }) => {
       image3 && formData.append("image3", image3);
       image4 && formData.append("image4", image4);
 
-      console.log("Sending request to:", `${backendUrl}/api/products/add`);
+      // console.log("Sending request to:", `${backendUrl}/api/products/add`);
       const response = await axios.post(`${backendUrl}/api/products/add`, formData, {
         headers: {
           Authorization: `Bearer ${token}`

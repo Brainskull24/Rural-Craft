@@ -56,7 +56,7 @@ export default function OfflineIndicator() {
                       try {
                         removePendingOrder(idx);
                       } catch (err) {
-                        console.log("Failed to remove queued order:", err);
+                        console.error("Failed to remove queued order:", err);
                       }
                     }}
                     className="px-2 py-1 bg-red-500 text-white rounded text-xs"

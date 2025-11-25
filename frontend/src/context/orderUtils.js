@@ -4,7 +4,7 @@ export function loadPendingOrders() {
     const raw = localStorage.getItem("pending_orders");
     return raw ? JSON.parse(raw) : [];
   } catch (err) {
-    console.log("orderUtils.loadPendingOrders failed:", err);
+    console.error("orderUtils.loadPendingOrders failed:", err);
     return [];
   }
 }
@@ -20,7 +20,7 @@ export function savePendingOrders(arr) {
     }
     return true;
   } catch (err) {
-    console.log("orderUtils.savePendingOrders failed:", err);
+    console.error("orderUtils.savePendingOrders failed:", err);
     return false;
   }
 }

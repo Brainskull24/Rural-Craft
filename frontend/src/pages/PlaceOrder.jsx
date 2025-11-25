@@ -43,7 +43,6 @@ const PlaceOrder = () => {
 
   const onSubmitHandler = async (event) => {
     event.preventDefault();
-    console.log("Form submitted");
     try {
       let orderItems = [];
       for (const items in cartItems) {
@@ -65,7 +64,6 @@ const PlaceOrder = () => {
         items: orderItems,
         amount: getCartAmount() + delivery_fee,
       };
-      console.log("Order data:", orderData);
       // Delegate to context handler which supports offline queuing for COD
       await placeOrder(orderData, method);
     } catch (error) {

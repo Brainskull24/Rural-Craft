@@ -12,7 +12,7 @@ export function register() {
           );
         })
         .catch((error) => {
-          console.log("Service Worker registration failed:", error);
+          console.error("Service Worker registration failed:", error);
         });
     });
   }

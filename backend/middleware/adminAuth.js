@@ -22,7 +22,7 @@ const adminAuth = (req, res, next) => {
     req.body.userId = token_decode.id;
     next();
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(401).json({ success: false, message: error.message });
   }
 };
